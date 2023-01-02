@@ -1,5 +1,5 @@
 - 👋 Hi, I’m @kaysoli
-- 👀 I’m interested in Python, FLutter and swift UI Developing.
+- 👀 I’m interested in Python, web development, FLutter and swift UI Developing.
 - 🌱 I’m currently learning Flutter , IOT and AI.
 - I am dveloping APPS for windows and pc on my own and i have all rights reserved, please contact me before repuplishing or using my apps
 
