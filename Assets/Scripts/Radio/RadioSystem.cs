@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,12 +18,17 @@ namespace RadioDispatch.Radio
         [SerializeField]
         private bool playAudioOnLog = true;
 
+        [Header("Timing")]
+        [SerializeField, Tooltip("Maximum seconds to wait for other audio (unit replies, chatter) before forcing the roger beep on transmission end.")]
+        private float rogerBeepMaxDelaySeconds = 10f;
+
         private readonly Queue<string> transcript = new();
         [SerializeField]
         private int transcriptLimit = 50;
 
         private AudioSource oneShotSource;
         private AudioSource staticSource;
+        private Coroutine rogerBeepRoutine;
         public IReadOnlyCollection<string> Transcript => transcript;
 
         /// <summary>
@@ -64,7 +70,7 @@ namespace RadioDispatch.Radio
             if (playAudioOnLog)
             {
                 PlayClickIn();
-                PlayRogerBeep();
+                ScheduleRogerBeep();
             }
         }
 
@@ -73,6 +79,7 @@ namespace RadioDispatch.Radio
         /// </summary>
         public void BeginTransmission()
         {
+            CancelRogerSchedule();
             PlayClickIn();
             StartStatic();
         }
@@ -83,7 +90,7 @@ namespace RadioDispatch.Radio
         public void EndTransmission()
         {
             StopStatic();
-            PlayRogerBeep();
+            ScheduleRogerBeep();
         }
 
         /// <summary>
@@ -175,6 +182,42 @@ namespace RadioDispatch.Radio
             }
 
             PlayClickOut();
+        }
+
+        /// <summary>
+        /// Schedules a roger beep to fire after any ongoing one-shot audio completes, or forces it after a timeout.
+        /// Ensures PTT release plays only once, even if officers are still replying.
+        /// </summary>
+        private void ScheduleRogerBeep()
+        {
+            CancelRogerSchedule();
+            rogerBeepRoutine = StartCoroutine(WaitAndPlayRoger());
+        }
+
+        /// <summary>
+        /// Cancels any pending roger beep so a new transmission can manage its own timing.
+        /// </summary>
+        private void CancelRogerSchedule()
+        {
+            if (rogerBeepRoutine != null)
+            {
+                StopCoroutine(rogerBeepRoutine);
+                rogerBeepRoutine = null;
+            }
+        }
+
+        private IEnumerator WaitAndPlayRoger()
+        {
+            float waited = 0f;
+            // If a unit voice or chatter clip is mid-playback, wait for completion but cap at the configured timeout.
+            while (oneShotSource != null && oneShotSource.isPlaying && waited < rogerBeepMaxDelaySeconds)
+            {
+                waited += Time.deltaTime;
+                yield return null;
+            }
+
+            PlayRogerBeep();
+            rogerBeepRoutine = null;
         }
 
         private void StartStatic()
