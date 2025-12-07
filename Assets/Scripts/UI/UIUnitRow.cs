@@ -53,7 +53,7 @@ namespace RadioDispatch.UI
 
             if (typeLabel != null)
             {
-                typeLabel.text = string.IsNullOrWhiteSpace(unit.Type) ? "General" : unit.Type;
+                typeLabel.text = unit.Type == UnitType.Unknown ? "General" : unit.Type.ToString();
             }
 
             if (acknowledgementLabel != null)

@@ -92,11 +92,16 @@ namespace RadioDispatch.Voice
         private List<string> officerReplies = new() { "Copy, en route", "10-4", "Acknowledged" };
 
         /// <summary>
+        /// Human-readable language name to display in settings or debugging tools.
+        /// </summary>
+        public string LanguageName => languageName;
+
+        /// <summary>
         /// Returns tokens that should be interpreted as "unit" when extracting numeric identifiers.
         /// </summary>
         public IEnumerable<string> GetUnitTokens()
         {
-            return unitTokens ?? System.Array.Empty<string>();
+            return unitTokens ?? new List<string>();
         }
 
         /// <summary>

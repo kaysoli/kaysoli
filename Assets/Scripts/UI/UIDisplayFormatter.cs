@@ -46,7 +46,7 @@ namespace RadioDispatch.UI
             }
 
             var zone = string.IsNullOrWhiteSpace(unit.CurrentZone) ? "Unknown" : unit.CurrentZone;
-            var type = string.IsNullOrWhiteSpace(unit.Type) ? "Unit" : unit.Type;
+            var type = unit.Type == UnitType.Unknown ? "Unit" : unit.Type.ToString();
             var display = string.IsNullOrWhiteSpace(unit.DisplayName) ? unit.Id : unit.DisplayName;
             var acknowledgement = string.IsNullOrWhiteSpace(unit.AcknowledgementLabel)
                 ? string.Empty

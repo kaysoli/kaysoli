@@ -35,7 +35,7 @@ namespace Tests.EditMode
             {
                 Id = "21",
                 DisplayName = string.Empty,
-                Type = "Patrol",
+                Type = UnitType.Patrol,
                 CurrentZone = "Downtown",
                 Status = UnitStatus.Available
             };
