@@ -31,7 +31,16 @@ Assets/
 - **Localization, Grammar, and Terminal Controls**: `VoiceLanguageProfile` now drives multilingual grammar packs (backup code levels, status tokens, panic words) and officer replies, while `UnitTerminalController` exposes terminal-driven status updates, call assignments, and acknowledgement labels (e.g., "10-4") without overriding the voice-first flow.
 - **Voice-Spawned Callouts & Backup Types**: Add voice-trigger tokens to any `CallTemplate` so dispatchers can verbally start or end callouts, push code 2/3/pursuit/air/SWAT/EMS/firetruck backup, and update unit statuses (available, on scene, in custody, panic) with radio feedback.
 - **Officer Voice Buckets & Callout Speech Libraries**: Assign a `UnitVoiceProfile` asset to every unit to tie officer-specific audio clips (hundreds of variants per response type) to the unit that was mentioned, and author `CalloutSpeechLibrary` assets so custom callouts and spoken keywords can be swapped in without code changes.
-- **Records Terminal & Lookups**: Use the new `RecordsDatabase`/`RecordsManager` plus `RecordsTerminalPanel` to load subject/vehicle/officer data from assets or CSV text sheets. The terminal supports type filters (civilian/officer/prisoner/vehicle and extended roles like presidential staff, ministers, FBI, Secret Service, undercover, and military), and voice commands like "run plate 7XKZ991" trigger `LookupRecord` intent, log the response, and play the requesting unit's assigned voice.
+- **Records Terminal & Lookups**: Use the new `RecordsDatabase`/`RecordsManager` plus `RecordsTerminalPanel` to load subject/vehicle/officer data from assets or CSV/TSV text sheets. The terminal supports type filters (civilian/officer/prisoner/vehicle and extended roles like presidential staff, ministers, FBI, Secret Service, undercover, and military), and voice commands like "run plate 7XKZ991" trigger `LookupRecord` intent, log the response, and play the requesting unit's assigned voice.
+
+### Records CSV/TSV format
+- Place CSV/TSV sheets under `Assets/` and assign them to `RecordsManager.csvSheets`. The importer auto-detects tabs/semicolons/commas and supports either the simple legacy row (`Id,Name,Type,VehiclePlate,Notes,Metadata,Occupation`) or the full header provided by the user (`RECORD_ID\tTIMESTAMP\tDATA_VERSION...\tIS_WITNESS_PROTECTION\tTYPE`).
+- Header columns are matched case-insensitively so order does not matter; unknown headers are ignored safely. Split-name columns are recombined into the display `Name`, and the `TYPE`/`RECORD_TYPE` column feeds the record category (with custom labels preserved).
+- Example row (tab separated):
+  ```
+  RECORD_ID\tTIMESTAMP\t...\tIS_WITNESS_PROTECTION\tTYPE
+  REC-1\t2025-12-07T19:12:55Z\t...\tNo\tCivilian Worker
+  ```
 - **Chatter & Lookup Replies**: `ChatterLibrary`/`ChatterManager` can auto-play ambient unit requests (plate, subject, victim follow-ups) with dispatcher responses routed through the records system, unit voice buckets, and roger beeps to keep the airwaves alive even during automated chatter.
 - **Simulation Helpers & PTT Hotkeys**: `UnitGenesisPool` can bulk-generate 100+ units from rosters, CSV sheets, or procedural LAPD-style call signs, while `VoiceHotkeyRouter` + `QueuedSpeechProviderAsset` let you test push-to-talk and speech routing in the Editor using a keyboard and queued phrases. `DispatchSimulationController` glues generation, voice routing, and shift start-up together for quick end-to-end simulations.
 

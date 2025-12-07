@@ -68,5 +68,25 @@ namespace RadioDispatch.Tests.EditMode
             Assert.AreEqual(CommandType.LookupRecord, command.Type);
             Assert.AreEqual("8abc123", command.LookupQuery.ToLowerInvariant());
         }
+
+        [Test]
+        public void ImportCsv_ParsesVerboseHeader()
+        {
+            var header = "RECORD_ID\tTIMESTAMP\tDATA_VERSION\tRECORD_STATUS\tLAST_UPDATED\tLAST_NAME\tFIRST_NAME\tMIDDLE_INITIAL\tNAME_SUFFIX\tSEX\tRACE\tHEIGHT\tWEIGHT\tDATE_OF_BIRTH\tPLACE_OF_BIRTH\tEYE_COLOR\tHAIR_COLOR\tSKIN_TONE\tDISTINGUISHING_MARKS\tDL_NUMBER\tDL_STATE\tDL_CLASS\tDL_EXPIRATION\tDL_STATUS\tSTATE_ID_NUMBER\tSTATE_ID_STATE\tSTATE_ID_EXPIRATION\tPASSPORT_NUMBER\tPASSPORT_COUNTRY\tPASSPORT_EXPIRATION\tSSN\tMILITARY_ID\tGOVERNMENT_EMP_ID\tADDRESS\tADDRESS_VERIFIED_DATE\tOCCUPATION\tEMPLOYER\tEDUCATION_LEVEL\tFBI_NUMBER\tSTATE_ID_SID\tLOCAL_CID\tALIASES\tPOLICE_CAUTIONS\tACTIVE_WARRANTS\tCRIMINAL_HISTORY\tPROTECTIVE_ORDERS\tREGISTERED_VEHICLES\tREGISTERED_FIREARMS\tKNOWN_ASSOCIATES\tLOCAL_POLICE_CONTACTS\tBOLO_STATUS\tIS_ARMED\tHAS_SECURITY_CLEARANCE\tIS_WITNESS_PROTECTION\tTYPE";
+            var row = "REC-1\t2025-12-07T19:12:55Z\t1\tActive\t2025-12-08\tNguyen\tSarah\tA\tJr\tF\tAsian\t5'6\"\t130\t1990-01-01\tSan Francisco\tBrown\tBlack\tTan\tScar on left hand\tD1234567\tCA\tC\t2028-01-01\tValid\tCA-12345\tCA\t2026-01-01\tP1234567\tUS\t2030-01-01\t123-45-6789\tMIL-55\tGOV-77\t123 Main St SF\t2025-01-01\tVictim\tTarget\tCollege\tFBI-999\tSID-5\tCID-9\t\"S.Nguyen\"\tNone\tNone\tClean\tNone\t1ABC234;2BCD345\tRegistered Glock\tAssoc1|Assoc2\tSFPD Sgt Doe\tBOLO cleared\tNo\tNo\tNo\tCivilian Worker";
+            var csv = $"{header}\n{row}";
+
+            var verboseDb = ScriptableObject.CreateInstance<RecordsDatabase>();
+            verboseDb.ImportCsv(new TextAsset(csv));
+
+            recordsManager.SetDatabase(verboseDb);
+            recordsManager.LoadDatabases();
+
+            var result = recordsManager.Lookup("REC-1");
+            Assert.IsTrue(result.Found);
+            Assert.AreEqual("Sarah A Nguyen Jr", result.Entry.Name);
+            Assert.AreEqual(RecordType.CivilianWorker, result.Entry.Type);
+            StringAssert.Contains("BOLO", result.Entry.BuildSummary());
+        }
     }
 }

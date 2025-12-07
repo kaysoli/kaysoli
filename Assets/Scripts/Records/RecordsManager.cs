@@ -16,7 +16,7 @@ namespace RadioDispatch.Records
         [SerializeField]
         private RecordsDatabase defaultDatabase;
 
-        [Tooltip("Optional CSV sheets to load at startup. Each line should be Id,Name,Type,VehiclePlate,Notes,Metadata.")]
+        [Tooltip("Optional CSV/TSV sheets to load at startup. Supports simple Id,Name rows or the verbose RECORD_ID...IS_WITNESS_PROTECTION header.")]
         [SerializeField]
         private List<TextAsset> csvSheets = new();
 
