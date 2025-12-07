@@ -108,7 +108,7 @@ namespace RadioDispatch.Records
                 return notFound;
             }
 
-            var result = RecordLookupResult.Found(trimmed, match);
+            var result = RecordLookupResult.Success(trimmed, match);
             OnLookupCompleted?.Invoke(result);
             return result;
         }

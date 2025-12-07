@@ -21,7 +21,7 @@ namespace RadioDispatch.Records
             return new RecordLookupResult { Found = false, Query = query, Entry = null };
         }
 
-        public static RecordLookupResult Found(string query, RecordEntry entry)
+        public static RecordLookupResult Success(string query, RecordEntry entry)
         {
             return new RecordLookupResult { Found = true, Query = query, Entry = entry };
         }
