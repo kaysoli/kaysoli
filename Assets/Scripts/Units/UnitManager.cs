@@ -49,6 +49,25 @@ namespace RadioDispatch.Units
         }
 
         /// <summary>
+        /// Adds a single unit to the active roster at runtime (useful for testing or CSV-driven generation).
+        /// The unit is cloned so the original template is not mutated.
+        /// </summary>
+        /// <param name="unitTemplate">Template containing ID, call sign, voice profile, etc.</param>
+        public Unit AddUnit(Unit unitTemplate)
+        {
+            if (unitTemplate == null)
+            {
+                Debug.LogWarning("AddUnit received a null template.");
+                return null;
+            }
+
+            var clone = CloneUnit(unitTemplate);
+            units.Add(clone);
+            NotifyUnitChanged(clone);
+            return clone;
+        }
+
+        /// <summary>
         /// Returns units that are currently marked as available.
         /// </summary>
         public List<Unit> GetAvailableUnits()

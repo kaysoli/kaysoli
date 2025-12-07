@@ -20,6 +20,15 @@ namespace RadioDispatch.Records
         [SerializeField]
         private List<TextAsset> csvSheets = new();
 
+        /// <summary>
+        /// Allows bootstrap scripts (e.g., simulation sandboxes) to inject CSV/TSV sheets at runtime before <see cref="LoadDatabases"/> is called.
+        /// Useful when you want to keep thousands of civilian/officer entries in external spreadsheets without modifying the default asset.
+        /// </summary>
+        public void SetCsvSheets(IEnumerable<TextAsset> sheets)
+        {
+            csvSheets = sheets == null ? new List<TextAsset>() : sheets.ToList();
+        }
+
         [Header("Outputs")]
         [SerializeField]
         private RadioSystem radioSystem;
