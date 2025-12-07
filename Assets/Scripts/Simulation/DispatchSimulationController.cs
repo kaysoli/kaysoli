@@ -1,9 +1,12 @@
 using UnityEngine;
+using System.Collections.Generic;
 using RadioDispatch.Core;
 using RadioDispatch.Calls;
+using RadioDispatch.Codes;
 using RadioDispatch.Units;
 using RadioDispatch.Voice;
 using RadioDispatch.Radio;
+using RadioDispatch.Records;
 
 namespace RadioDispatch.Simulation
 {
@@ -45,6 +48,22 @@ namespace RadioDispatch.Simulation
         private VoiceHotkeyRouter voiceHotkeyRouter;
 
         [SerializeField]
+        [Tooltip("Voice input component used for push-to-talk collection from mobile or editor hotkeys.")]
+        private VoiceInputManager voiceInputManager;
+
+        [SerializeField]
+        [Tooltip("Optional set of code sets to seed into the interpreter for localized grammar.")]
+        private List<CodeSet> codeSets = new();
+
+        [SerializeField]
+        [Tooltip("Feedback profile controlling success/failure strings for voice parsing.")]
+        private RadioFeedbackProfile feedbackProfile;
+
+        [SerializeField]
+        [Tooltip("Records manager used for subject/vehicle lookups when officers request database checks.")]
+        private RecordsManager recordsManager;
+
+        [SerializeField]
         [Tooltip("When enabled, the controller will call BeginShift on start to spin up timers and call spawning.")]
         private bool autoBeginShift = true;
 
@@ -57,7 +76,14 @@ namespace RadioDispatch.Simulation
 
             if (voiceCommandController != null)
             {
-                voiceCommandController.Initialize();
+                voiceCommandController.Initialize(
+                    unitManager,
+                    callManager,
+                    radioSystem,
+                    voiceInputManager,
+                    codeSets,
+                    feedbackProfile,
+                    recordsManager);
             }
 
             if (autoBeginShift && gameManager != null)
