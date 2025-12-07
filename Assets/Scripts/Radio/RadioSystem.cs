@@ -125,6 +125,21 @@ namespace RadioDispatch.Radio
             PlayUnitResponse();
         }
 
+        /// <summary>
+        /// Allows callers to play a specific audio clip (e.g., custom chatter responses) without adding a new profile.
+        /// </summary>
+        public void PlayCustomClip(AudioClip clip, float volume = 1f)
+        {
+            if (clip == null)
+            {
+                return;
+            }
+
+            LastPlayedVoiceClip = clip;
+            EnsureOneShotSource();
+            oneShotSource.PlayOneShot(clip, volume);
+        }
+
         private void PlayClickIn()
         {
             if (audioProfile?.ClickIn == null)

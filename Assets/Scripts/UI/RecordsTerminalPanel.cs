@@ -17,6 +17,10 @@ namespace RadioDispatch.UI
         [SerializeField]
         private Text outputText;
 
+        [Tooltip("Optional dropdown to restrict searches to a record type (Any/Civilian/Officer/Prisoner/Vehicle). Leave empty for no filter.")]
+        [SerializeField]
+        private Dropdown typeDropdown;
+
         [Header("Dependencies")]
         [SerializeField]
         private RecordsManager recordsManager;
@@ -39,7 +43,8 @@ namespace RadioDispatch.UI
         public void SubmitQuery()
         {
             var query = queryField != null ? queryField.text : string.Empty;
-            var result = recordsManager != null ? recordsManager.Lookup(query) : RecordLookupResult.MissingQuery();
+            var typeFilter = ParseSelectedType();
+            var result = recordsManager != null ? recordsManager.Lookup(query, typeFilter) : RecordLookupResult.MissingQuery();
             var display = result.BuildResponse();
 
             if (outputText != null)
@@ -48,6 +53,24 @@ namespace RadioDispatch.UI
             }
 
             radioSystem?.LogMessage("Dispatch", display);
+        }
+
+        private RecordType? ParseSelectedType()
+        {
+            if (typeDropdown == null)
+            {
+                return null;
+            }
+
+            // Expect dropdown options to align with RecordType ordering plus an "Any" entry at index 0.
+            return typeDropdown.value switch
+            {
+                1 => RecordType.Civilian,
+                2 => RecordType.Officer,
+                3 => RecordType.Prisoner,
+                4 => RecordType.Vehicle,
+                _ => null
+            };
         }
     }
 }

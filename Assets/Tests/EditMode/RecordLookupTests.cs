@@ -53,6 +53,14 @@ namespace RadioDispatch.Tests.EditMode
         }
 
         [Test]
+        public void Lookup_TypeFilter_PrefersMatchingCategory()
+        {
+            var result = recordsManager.Lookup("Officer", RecordType.Officer);
+            Assert.IsTrue(result.Found);
+            Assert.AreEqual(RecordType.Officer, result.Entry.Type);
+        }
+
+        [Test]
         public void Interpreter_DetectsLookupIntent()
         {
             var interpreter = new CommandInterpreter(unitManager, callManager, null, ScriptableObject.CreateInstance<VoiceLanguageProfile>());

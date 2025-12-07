@@ -72,9 +72,11 @@ namespace RadioDispatch.Records
         }
 
         /// <summary>
-        /// Searches by ID, name, or vehicle plate (case-insensitive). Returns the most specific match.
+        /// Searches by ID, name, or vehicle plate (case-insensitive). Optionally restricts results to a specific record type
+        /// (civilian, officer, prisoner, vehicle) so dispatchers can target the correct database tab. Returns the most specific
+        /// match or a not-found notice.
         /// </summary>
-        public RecordLookupResult Lookup(string query)
+        public RecordLookupResult Lookup(string query, RecordType? typeFilter = null)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -82,9 +84,22 @@ namespace RadioDispatch.Records
             }
 
             var trimmed = query.Trim();
-            var match = runtimeRecords.FirstOrDefault(r => r.Id.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
+            // First pass: enforce type filter if provided so officers get the right subject/vehicle/officer hit.
+            var filtered = typeFilter.HasValue
+                ? runtimeRecords.Where(r => r.Type == typeFilter.Value).ToList()
+                : runtimeRecords;
+
+            var match = filtered.FirstOrDefault(r => r.Id.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
+                        ?? filtered.FirstOrDefault(r => !string.IsNullOrWhiteSpace(r.VehiclePlate) && r.VehiclePlate.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
+                        ?? filtered.FirstOrDefault(r => r.Name != null && r.Name.IndexOf(trimmed, StringComparison.OrdinalIgnoreCase) >= 0);
+
+            // Second pass: if a filter was set but nothing matched, expand to any record so the dispatcher still hears a reply.
+            if (match == null && typeFilter.HasValue)
+            {
+                match = runtimeRecords.FirstOrDefault(r => r.Id.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
                         ?? runtimeRecords.FirstOrDefault(r => !string.IsNullOrWhiteSpace(r.VehiclePlate) && r.VehiclePlate.Equals(trimmed, StringComparison.OrdinalIgnoreCase))
                         ?? runtimeRecords.FirstOrDefault(r => r.Name != null && r.Name.IndexOf(trimmed, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
 
             if (match == null)
             {
@@ -101,9 +116,9 @@ namespace RadioDispatch.Records
         /// <summary>
         /// Allows units to request information (plate checks, subject lookups) over radio, emitting responses and voice lines.
         /// </summary>
-        public void HandleUnitLookupRequest(Unit requestingUnit, string query)
+        public void HandleUnitLookupRequest(Unit requestingUnit, string query, RecordType? typeFilter = null)
         {
-            var result = Lookup(query);
+            var result = Lookup(query, typeFilter);
             var speaker = requestingUnit != null ? requestingUnit.DisplayName ?? requestingUnit.Id : "Unit";
 
             radioSystem?.BeginTransmission();

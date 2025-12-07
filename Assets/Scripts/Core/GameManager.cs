@@ -42,6 +42,9 @@ namespace RadioDispatch.Core
         [SerializeField]
         private Records.RecordsManager recordsManager;
 
+        [SerializeField]
+        private ChatterManager chatterManager;
+
         [Header("Content & Progression")]
         [SerializeField]
         private ShiftConfig shiftConfig;
@@ -54,6 +57,9 @@ namespace RadioDispatch.Core
 
         [SerializeField]
         private Records.RecordsDatabase defaultRecords;
+
+        [SerializeField]
+        private ChatterLibrary defaultChatterLibrary;
 
         private float shiftTimer;
         private float difficultyTimer;
@@ -220,6 +226,18 @@ namespace RadioDispatch.Core
                     recordsManager.LoadDatabases();
                 }
             }
+
+            if (chatterManager != null)
+            {
+                if (defaultChatterLibrary != null)
+                {
+                    chatterManager.SetLibrary(defaultChatterLibrary);
+                }
+                else
+                {
+                    chatterManager.SetLibrary(BuildFallbackChatterLibrary());
+                }
+            }
         }
 
         private List<CallTemplate> BuildFallbackTemplates()
@@ -268,7 +286,29 @@ namespace RadioDispatch.Core
             medical.minimumRecommendedUnits = 1;
             medical.recommendedUnitTypes = new List<UnitType> { UnitType.EMS, UnitType.Patrol };
 
-            return new List<CallTemplate> { robbery, traffic, disturbance, medical };
+            var grandTheft = ScriptableObject.CreateInstance<CallTemplate>();
+            grandTheft.id = "2025-340555";
+            grandTheft.title = "Grand Theft Just Occurred";
+            grandTheft.description = "Victim reports two suspects smashed her 2024 Accord window, took laptop and purse.";
+            grandTheft.location = "Target Parking Lot - 1690 Folsom St";
+            grandTheft.priority = CallPriority.Medium;
+            grandTheft.category = CallCategory.Robbery;
+            grandTheft.allowedResponseTime = 150f;
+            grandTheft.minimumRecommendedUnits = 2;
+            grandTheft.recommendedUnitTypes = new List<UnitType> { UnitType.Patrol, UnitType.AirSupport };
+
+            var stabbing = ScriptableObject.CreateInstance<CallTemplate>();
+            stabbing.id = "2025-340994";
+            stabbing.title = "Stabbing Just Occurred";
+            stabbing.description = "Multiple callers report male stabbed multiple times; suspect fled southbound on foot.";
+            stabbing.location = "El Gran Taco - 1950 Mission St";
+            stabbing.priority = CallPriority.Critical;
+            stabbing.category = CallCategory.Medical;
+            stabbing.allowedResponseTime = 45f;
+            stabbing.minimumRecommendedUnits = 3;
+            stabbing.recommendedUnitTypes = new List<UnitType> { UnitType.EMS, UnitType.Patrol, UnitType.SWAT };
+
+            return new List<CallTemplate> { robbery, traffic, disturbance, medical, grandTheft, stabbing };
         }
 
         private List<Unit> BuildFallbackUnits()
@@ -290,8 +330,52 @@ namespace RadioDispatch.Core
                 new Records.RecordEntry { Id = "A12345", Name = "Jamie Lee", Type = Records.RecordType.Civilian, VehiclePlate = "4HND213", Notes = "Valid license, no wants." },
                 new Records.RecordEntry { Id = "B98211", Name = "Morgan Diaz", Type = Records.RecordType.Prisoner, Notes = "On parole, caution: resistive." },
                 new Records.RecordEntry { Id = "U-21", Name = "Officer Taylor", Type = Records.RecordType.Officer, VehiclePlate = "UNIT21", Notes = "Traffic division." },
-                new Records.RecordEntry { Id = "CAR-77", Name = "Unknown", Type = Records.RecordType.Vehicle, VehiclePlate = "7XKZ991", Notes = "Reported stolen." }
+                new Records.RecordEntry { Id = "CAR-77", Name = "Unknown", Type = Records.RecordType.Vehicle, VehiclePlate = "7XKZ991", Notes = "Reported stolen." },
+                new Records.RecordEntry { Id = "SARAH-340555", Name = "Sarah Nguyen", Type = Records.RecordType.Civilian, Notes = "Grand theft victim, 2024 Honda Accord." },
+                new Records.RecordEntry { Id = "BOLO-CAMRY", Name = "Silver Toyota Camry", Type = Records.RecordType.Vehicle, VehiclePlate = "NO-PLATE", Notes = "BOLO issued, linked to 487 at 1690 Folsom." }
             };
+        }
+
+        private ChatterLibrary BuildFallbackChatterLibrary()
+        {
+            var chatter = ScriptableObject.CreateInstance<ChatterLibrary>();
+            chatter.Entries = new List<ChatterEntry>
+            {
+                new ChatterEntry
+                {
+                    Id = "plate-check-7XKZ991",
+                    Title = "Traffic plate check",
+                    UnitId = "21",
+                    TransmissionText = "Dispatch, run plate 7XKZ991 for me.",
+                    RecordQuery = "7XKZ991",
+                    UseTypeFilter = true,
+                    TypeFilter = Records.RecordType.Vehicle
+                },
+                new ChatterEntry
+                {
+                    Id = "victim-followup-sarah",
+                    Title = "Victim callback",
+                    UnitId = "3S12",
+                    TransmissionText = "Central, confirm victim Sarah Nguyen contact for the Target lot 487.",
+                    RecordQuery = "Sarah Nguyen",
+                    DispatchResponseOverride = "Copy, victim Sarah Nguyen is on scene. Contact confirmed.",
+                    UseTypeFilter = true,
+                    TypeFilter = Records.RecordType.Civilian
+                },
+                new ChatterEntry
+                {
+                    Id = "bolo-camry",
+                    Title = "BOLO reminder",
+                    UnitId = "Air-5",
+                    TransmissionText = "Air-5 checking for the silver Camry, no plate on file.",
+                    RecordQuery = "NO-PLATE",
+                    UseTypeFilter = true,
+                    TypeFilter = Records.RecordType.Vehicle,
+                    DispatchResponseOverride = "Dispatch copies, BOLO Camry last seen southbound."
+                }
+            };
+
+            return chatter;
         }
     }
 }

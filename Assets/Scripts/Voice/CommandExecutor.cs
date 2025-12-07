@@ -252,7 +252,13 @@ namespace RadioDispatch.Voice
                 return;
             }
 
-            var result = recordsManager.Lookup(command.LookupQuery);
+            RecordType? typeFilter = null;
+            if (command.LookupIsVehicle)
+            {
+                typeFilter = Records.RecordType.Vehicle;
+            }
+
+            var result = recordsManager.Lookup(command.LookupQuery, typeFilter);
             var fallback = result.BuildResponse();
             var formatted = languageProfile?.FormatLookup(fallback, command.LookupQuery, result.Entry?.BuildSummary() ?? fallback) ?? fallback;
             radioSystem.LogMessage("Dispatch", formatted);
