@@ -52,3 +52,24 @@ From Unity's Test Runner, select **Edit Mode** and run all tests. Sample coverag
 - Replace VoiceInputManager stubs with platform-specific microphone integrations.
 - Add more parsing rules, code sets, audio, and content templates.
 - Author additional `ShiftConfig`, `CallLibrary`, and `UnitRoster` assets to tune difficulty curves and content variety.
+
+## Minimal CSV-driven scenario sandbox (no full UI required)
+You can spin up a quick test scene without the full terminal/UI stack by wiring only the simulation helpers and CSV inputs:
+
+1. **Create a folder for your sheets**: Drop any CSV/TSV files under `Assets/Scenarios/` (Unity imports them as `TextAsset`).
+   - **Records**: Use the verbose header (`RECORD_ID\tTIMESTAMP...IS_WITNESS_PROTECTION\tTYPE`) or the simple header
+     (`Id,Name,Type,VehiclePlate,Notes,Metadata,Occupation`). Assign these sheets to `RecordsManager.csvSheets`.
+   - **Units**: Point `UnitGenesisPool` at a `UnitRoster` asset or a units CSV (Id, DisplayName, UnitType, Status, Zone, VoiceProfileId).
+   - **Calls**: Assign a `CallLibrary` asset with your `CallTemplate` ScriptableObjects, or author a `CalloutSpeechLibrary` to spawn calls by voice.
+
+2. **Scene wiring**: Add a `DispatchSimulationController` to an empty scene and connect:
+   - `GameManager`, `CallManager`, `UnitManager`, `RadioSystem`, `RecordsManager`, `VoiceCommandController`, and `VoiceInputManager` references.
+   - Optional: `UnitGenesisPool` (to auto-seed 100+ rostered/procedural units), `VoiceHotkeyRouter` (desktop push-to-talk testing),
+     `RadioAudioProfile` with your roger beep, and `RadioFeedbackProfile` for transcript cues.
+
+3. **Run the sandbox**: Press Play—`DispatchSimulationController` will generate units (if present), initialize the voice stack, and begin a shift.
+   You can trigger chatter via `ChatterManager.TriggerChatter`, spawn calls via `CallManager.SpawnCallFromTemplate`, or press your PTT button (wired
+   to `UIManager.OnPttPressed/OnPttReleased` or `VoiceHotkeyRouter`) to speak commands. The radio system will still play the roger beep and any
+   officer voice replies even without the full terminal UI.
+
+This setup lets you validate CSV data and radio/audio behavior quickly before layering on the complete HUD and terminal windows.
