@@ -11,7 +11,8 @@ namespace RadioDispatch.UI
     public static class UIDisplayFormatter
     {
         // TimeSpan.ToString expects the colon to be escaped in a custom format string.
-        private const string TimeFormat = @"mm\:ss";
+        // Using a regular string literal keeps the escape sequence valid across Unity/IL2CPP builds.
+        private const string TimeFormat = "mm\\:ss";
 
         /// <summary>
         /// Builds a compact summary line for a call row, including priority and elapsed time.
