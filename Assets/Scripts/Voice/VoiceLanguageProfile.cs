@@ -37,6 +37,15 @@ namespace RadioDispatch.Voice
         [SerializeField]
         private List<string> panicKeywords = new() { "panic", "signal 100" };
 
+        [SerializeField]
+        private List<string> lookupKeywords = new() { "run", "check", "lookup" };
+
+        [SerializeField]
+        private List<string> vehicleLookupKeywords = new() { "plate", "vehicle" };
+
+        [SerializeField]
+        private List<string> personLookupKeywords = new() { "id", "subject", "person", "name" };
+
         [Header("Grammar Mapping")]
         [SerializeField]
         private List<StatusKeyword> statusTokens = new()
@@ -86,6 +95,10 @@ namespace RadioDispatch.Voice
         [Tooltip("Template for cancel/resolve replies (uses {call}).")]
         [SerializeField]
         private string cancellationTemplate = "Call {call} canceled.";
+
+        [Tooltip("Template for database replies (uses {query} and {result}).")]
+        [SerializeField]
+        private string lookupTemplate = "Results for {query}: {result}";
 
         [Header("Officer Replies")]
         [SerializeField]
@@ -179,6 +192,12 @@ namespace RadioDispatch.Voice
                 return true;
             }
 
+            if (ContainsAny(cleanedText, lookupKeywords) || ContainsAny(cleanedText, vehicleLookupKeywords) || ContainsAny(cleanedText, personLookupKeywords))
+            {
+                commandType = CommandType.LookupRecord;
+                return true;
+            }
+
             if (ContainsAny(cleanedText, assignKeywords))
             {
                 commandType = CommandType.AssignUnitsToCall;
@@ -205,6 +224,9 @@ namespace RadioDispatch.Voice
             AddMatches(cleanedText, startCalloutKeywords, recognized);
             AddMatches(cleanedText, endCalloutKeywords, recognized);
             AddMatches(cleanedText, panicKeywords, recognized);
+            AddMatches(cleanedText, lookupKeywords, recognized);
+            AddMatches(cleanedText, vehicleLookupKeywords, recognized);
+            AddMatches(cleanedText, personLookupKeywords, recognized);
         }
 
         /// <summary>
@@ -236,6 +258,16 @@ namespace RadioDispatch.Voice
             return string.IsNullOrWhiteSpace(cancellationTemplate)
                 ? fallback
                 : cancellationTemplate.Replace("{call}", callLabel);
+        }
+
+        /// <summary>
+        /// Formats database lookup responses so localized packs can present results consistently.
+        /// </summary>
+        public string FormatLookup(string fallback, string query, string result)
+        {
+            return string.IsNullOrWhiteSpace(lookupTemplate)
+                ? fallback
+                : lookupTemplate.Replace("{query}", query).Replace("{result}", result);
         }
 
         /// <summary>
@@ -315,6 +347,51 @@ namespace RadioDispatch.Voice
             return statusTokens != null && statusTokens.Exists(mapping => mapping.Keyword.Equals(token, System.StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Extracts the lookup term and whether the request targets a vehicle so command parsing can map to records.
+        /// </summary>
+        public bool TryExtractLookup(string cleanedText, out string lookup, out bool isVehicle)
+        {
+            lookup = null;
+            isVehicle = false;
+
+            if (string.IsNullOrWhiteSpace(cleanedText))
+            {
+                return false;
+            }
+
+            var matchedLookup = ContainsAny(cleanedText, lookupKeywords) || ContainsAny(cleanedText, vehicleLookupKeywords) || ContainsAny(cleanedText, personLookupKeywords);
+            if (!matchedLookup)
+            {
+                return false;
+            }
+
+            // Very lightweight token extraction: grab the last word after a known keyword.
+            foreach (var keyword in vehicleLookupKeywords)
+            {
+                var token = ExtractTrailingToken(cleanedText, keyword);
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    lookup = token;
+                    isVehicle = true;
+                    return true;
+                }
+            }
+
+            foreach (var keyword in personLookupKeywords)
+            {
+                var token = ExtractTrailingToken(cleanedText, keyword);
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    lookup = token;
+                    isVehicle = false;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static void AddMatches(string text, IEnumerable<string> keywords, ICollection<string> recognized)
         {
             if (keywords == null)
@@ -334,6 +411,29 @@ namespace RadioDispatch.Voice
         private static bool ContainsAny(string text, IEnumerable<string> keywords)
         {
             return keywords != null && keywords.Any(k => !string.IsNullOrWhiteSpace(k) && text.Contains(k.ToLowerInvariant()));
+        }
+
+        private static string ExtractTrailingToken(string cleanedText, string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword) || string.IsNullOrWhiteSpace(cleanedText))
+            {
+                return null;
+            }
+
+            var index = cleanedText.IndexOf(keyword.ToLowerInvariant(), System.StringComparison.Ordinal);
+            if (index < 0)
+            {
+                return null;
+            }
+
+            var slice = cleanedText.Substring(index + keyword.Length).Trim();
+            if (string.IsNullOrWhiteSpace(slice))
+            {
+                return null;
+            }
+
+            var parts = slice.Split(' ');
+            return parts.Length > 0 ? parts[0] : null;
         }
     }
 

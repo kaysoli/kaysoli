@@ -27,6 +27,9 @@ namespace RadioDispatch.Voice
         [SerializeField]
         private RadioSystem radioSystem;
 
+        [SerializeField]
+        private Records.RecordsManager recordsManager;
+
         [Header("Codes & Feedback")]
         [SerializeField]
         private List<CodeSet> codeSets = new();
@@ -66,7 +69,7 @@ namespace RadioDispatch.Voice
         /// <summary>
         /// Allows runtime or test injection of dependencies before enabling.
         /// </summary>
-        public void Initialize(UnitManager units, CallManager calls, RadioSystem radio, VoiceInputManager input, IEnumerable<CodeSet> sets = null, RadioFeedbackProfile feedback = null)
+        public void Initialize(UnitManager units, CallManager calls, RadioSystem radio, VoiceInputManager input, IEnumerable<CodeSet> sets = null, RadioFeedbackProfile feedback = null, Records.RecordsManager records = null)
         {
             unitManager = units;
             callManager = calls;
@@ -74,6 +77,7 @@ namespace RadioDispatch.Voice
             voiceInputManager = input;
             codeSets = sets == null ? new List<CodeSet>() : new List<CodeSet>(sets);
             feedbackProfile = feedback;
+            recordsManager = records;
             EnsureInitialized();
             Subscribe();
         }
@@ -121,7 +125,7 @@ namespace RadioDispatch.Voice
             codeLibrary ??= ScriptableObject.CreateInstance<CodeLibrary>();
             codeLibrary.SetCodeSets(codeSets);
             interpreter = new CommandInterpreter(unitManager, callManager, codeLibrary, languageProfile);
-            executor = new CommandExecutor(unitManager, callManager, radioSystem, languageProfile);
+            executor = new CommandExecutor(unitManager, callManager, radioSystem, languageProfile, recordsManager);
         }
 
         private void HandleVoiceCommand(string recognizedText)

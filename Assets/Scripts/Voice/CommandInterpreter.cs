@@ -18,7 +18,8 @@ namespace RadioDispatch.Voice
         CreateCallout,
         EndCallout,
         UpdateUnitStatus,
-        PanicCheck
+        PanicCheck,
+        LookupRecord
     }
 
     public enum BackupRequestType
@@ -48,6 +49,8 @@ namespace RadioDispatch.Voice
         public UnitStatus? RequestedStatus;
         public BackupRequestType BackupType = BackupRequestType.Standard;
         public bool PanicCheckRequested;
+        public string LookupQuery;
+        public bool LookupIsVehicle;
     }
 
     /// <summary>
@@ -85,17 +88,23 @@ namespace RadioDispatch.Voice
             command.RequestedStatus = ParseStatus(cleaned, command.RecognizedKeywords);
             command.BackupType = ParseBackupType(cleaned, command.RecognizedKeywords);
             command.PanicCheckRequested = languageProfile?.ContainsPanic(cleaned) == true || cleaned.Contains("panic");
+            ParseLookup(cleaned, command);
             ParseCodes(cleaned, command);
-            command.Type = DetermineIntent(cleaned, command.RecognizedCodes, command.RecognizedKeywords);
+            command.Type = DetermineIntent(cleaned, command.RecognizedCodes, command.RecognizedKeywords, command);
 
             return command;
         }
 
-        private CommandType DetermineIntent(string cleaned, List<CodePhrase> codes, List<string> recognized)
+        private CommandType DetermineIntent(string cleaned, List<CodePhrase> codes, List<string> recognized, ParsedCommand command)
         {
             if (languageProfile != null && languageProfile.TryMapIntent(cleaned, out var localizedIntent))
             {
                 return localizedIntent;
+            }
+
+            if (!string.IsNullOrWhiteSpace(command.LookupQuery))
+            {
+                return CommandType.LookupRecord;
             }
 
             if (ContainsMeaning(codes, "backup") || cleaned.Contains("backup") || cleaned.Contains("additional"))
@@ -228,6 +237,44 @@ namespace RadioDispatch.Voice
             }
 
             return template;
+        }
+
+        private void ParseLookup(string cleaned, ParsedCommand command)
+        {
+            if (command == null)
+            {
+                return;
+            }
+
+            if (languageProfile != null && languageProfile.TryExtractLookup(cleaned, out var localizedQuery, out var isVehicle))
+            {
+                command.LookupQuery = localizedQuery;
+                command.LookupIsVehicle = isVehicle;
+                if (!string.IsNullOrWhiteSpace(localizedQuery))
+                {
+                    command.RecognizedKeywords.Add(localizedQuery);
+                }
+
+                return;
+            }
+
+            // Fallback pattern matching for IDs and plates.
+            var idMatch = Regex.Match(cleaned, "(?:id|plate|subject)\\s*([a-z0-9]+)");
+            if (idMatch.Success)
+            {
+                command.LookupQuery = idMatch.Groups[1].Value;
+                command.LookupIsVehicle = cleaned.Contains("plate");
+                command.RecognizedKeywords.Add(command.LookupQuery);
+                return;
+            }
+
+            var nameMatch = Regex.Match(cleaned, "(?:name|person)\\s*([a-z\\s]+)");
+            if (nameMatch.Success)
+            {
+                command.LookupQuery = nameMatch.Groups[1].Value.Trim();
+                command.LookupIsVehicle = false;
+                command.RecognizedKeywords.Add(command.LookupQuery);
+            }
         }
 
         private UnitStatus? ParseStatus(string cleaned, List<string> recognized)

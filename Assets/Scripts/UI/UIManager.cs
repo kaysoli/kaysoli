@@ -3,6 +3,7 @@ using RadioDispatch.Calls;
 using RadioDispatch.Radio;
 using RadioDispatch.Units;
 using RadioDispatch.Voice;
+using RadioDispatch.Records;
 
 namespace RadioDispatch.UI
 {
@@ -33,6 +34,9 @@ namespace RadioDispatch.UI
         [SerializeField]
         private UISwipeController swipeController;
 
+        [SerializeField]
+        private RecordsTerminalPanel recordsPanel;
+
         [Header("Input")]
         [SerializeField]
         private VoiceInputManager voiceInputManager;
@@ -40,11 +44,19 @@ namespace RadioDispatch.UI
         [SerializeField]
         private VoiceCommandController voiceCommandController;
 
+        [SerializeField]
+        private RecordsManager recordsManager;
+
         private void Awake()
         {
             if (unitManager != null && radioSystem != null)
             {
                 unitManager.OnUnitUpdated += HandleUnitUpdated;
+            }
+
+            if (recordsPanel != null)
+            {
+                recordsPanel.Initialize(recordsManager, radioSystem);
             }
         }
 

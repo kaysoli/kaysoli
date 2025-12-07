@@ -3,6 +3,7 @@ using UnityEngine;
 using RadioDispatch.Calls;
 using RadioDispatch.Radio;
 using RadioDispatch.Units;
+using RadioDispatch.Records;
 
 namespace RadioDispatch.Voice
 {
@@ -14,14 +15,16 @@ namespace RadioDispatch.Voice
         private readonly UnitManager unitManager;
         private readonly CallManager callManager;
         private readonly RadioSystem radioSystem;
+        private readonly RecordsManager recordsManager;
         private VoiceLanguageProfile languageProfile;
 
-        public CommandExecutor(UnitManager unitManager, CallManager callManager, RadioSystem radioSystem, VoiceLanguageProfile languageProfile = null)
+        public CommandExecutor(UnitManager unitManager, CallManager callManager, RadioSystem radioSystem, VoiceLanguageProfile languageProfile = null, RecordsManager recordsManager = null)
         {
             this.unitManager = unitManager;
             this.callManager = callManager;
             this.radioSystem = radioSystem;
             this.languageProfile = languageProfile;
+            this.recordsManager = recordsManager;
         }
 
         /// <summary>
@@ -66,6 +69,9 @@ namespace RadioDispatch.Voice
                     break;
                 case CommandType.PanicCheck:
                     HandlePanicCheck(command);
+                    break;
+                case CommandType.LookupRecord:
+                    HandleLookup(command);
                     break;
                 default:
                     radioSystem.LogMessage("Dispatch", $"Unrecognized command: {command.RawText}");
@@ -229,6 +235,31 @@ namespace RadioDispatch.Voice
                 unitManager.FlagPanic(unit);
                 radioSystem.LogMessage("Dispatch", $"{unit.DisplayName}, confirm panic activation. Do you need backup or is this a false alarm?");
                 radioSystem.PlayUnitVoice(unit.VoiceProfile, VoiceResponseType.Panic);
+            }
+        }
+
+        private void HandleLookup(ParsedCommand command)
+        {
+            if (recordsManager == null)
+            {
+                radioSystem.LogMessage("Dispatch", "No records system configured.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(command.LookupQuery))
+            {
+                radioSystem.LogMessage("Dispatch", "No ID, plate, or subject provided for lookup.");
+                return;
+            }
+
+            var result = recordsManager.Lookup(command.LookupQuery);
+            var fallback = result.BuildResponse();
+            var formatted = languageProfile?.FormatLookup(fallback, command.LookupQuery, result.Entry?.BuildSummary() ?? fallback) ?? fallback;
+            radioSystem.LogMessage("Dispatch", formatted);
+
+            foreach (var unit in command.TargetUnits)
+            {
+                LogOfficerReply(unit, VoiceResponseType.Status, "Copy, data received.");
             }
         }
 

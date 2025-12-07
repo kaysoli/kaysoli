@@ -39,6 +39,9 @@ namespace RadioDispatch.Core
         [SerializeField]
         private ScoringSystem scoringSystem;
 
+        [SerializeField]
+        private Records.RecordsManager recordsManager;
+
         [Header("Content & Progression")]
         [SerializeField]
         private ShiftConfig shiftConfig;
@@ -48,6 +51,9 @@ namespace RadioDispatch.Core
 
         [SerializeField]
         private UnitRoster defaultUnitRoster;
+
+        [SerializeField]
+        private Records.RecordsDatabase defaultRecords;
 
         private float shiftTimer;
         private float difficultyTimer;
@@ -197,6 +203,23 @@ namespace RadioDispatch.Core
             {
                 callManager.SetTemplates(BuildFallbackTemplates());
             }
+
+            if (recordsManager != null)
+            {
+                if (defaultRecords != null)
+                {
+                    recordsManager.SetDatabase(defaultRecords);
+                    recordsManager.LoadDatabases();
+                }
+                else
+                {
+                    // Seed a few sample records when no asset is wired to keep radio lookups meaningful.
+                    var fallbackDb = ScriptableObject.CreateInstance<Records.RecordsDatabase>();
+                    fallbackDb.Records = BuildFallbackRecords();
+                    recordsManager.SetDatabase(fallbackDb);
+                    recordsManager.LoadDatabases();
+                }
+            }
         }
 
         private List<CallTemplate> BuildFallbackTemplates()
@@ -257,6 +280,17 @@ namespace RadioDispatch.Core
                 new Unit { Id = "35", DisplayName = "Unit 35", Status = UnitStatus.Available, CurrentZone = "Zone D", Type = UnitType.EMS },
                 new Unit { Id = "44", DisplayName = "Unit 44", Status = UnitStatus.Available, CurrentZone = "Zone A", Type = UnitType.K9 },
                 new Unit { Id = "55", DisplayName = "Unit 55", Status = UnitStatus.Available, CurrentZone = "Zone Downtown", Type = UnitType.SWAT }
+            };
+        }
+
+        private List<Records.RecordEntry> BuildFallbackRecords()
+        {
+            return new List<Records.RecordEntry>
+            {
+                new Records.RecordEntry { Id = "A12345", Name = "Jamie Lee", Type = Records.RecordType.Civilian, VehiclePlate = "4HND213", Notes = "Valid license, no wants." },
+                new Records.RecordEntry { Id = "B98211", Name = "Morgan Diaz", Type = Records.RecordType.Prisoner, Notes = "On parole, caution: resistive." },
+                new Records.RecordEntry { Id = "U-21", Name = "Officer Taylor", Type = Records.RecordType.Officer, VehiclePlate = "UNIT21", Notes = "Traffic division." },
+                new Records.RecordEntry { Id = "CAR-77", Name = "Unknown", Type = Records.RecordType.Vehicle, VehiclePlate = "7XKZ991", Notes = "Reported stolen." }
             };
         }
     }
