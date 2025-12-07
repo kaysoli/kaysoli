@@ -10,7 +10,8 @@ namespace RadioDispatch.UI
     /// </summary>
     public static class UIDisplayFormatter
     {
-        private const string TimeFormat = "mm\:ss";
+        // TimeSpan.ToString expects the colon to be escaped in a custom format string.
+        private const string TimeFormat = @"mm\:ss";
 
         /// <summary>
         /// Builds a compact summary line for a call row, including priority and elapsed time.
