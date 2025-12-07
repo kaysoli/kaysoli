@@ -6,7 +6,15 @@ namespace RadioDispatch.Records
     public enum RecordType
     {
         Civilian,
+        CivilianWorker,
+        PresidentialStaff,
+        Minister,
+        Military,
         Officer,
+        PoliceOfficer,
+        FbiAgent,
+        SecretService,
+        Undercover,
         Prisoner,
         Vehicle
     }

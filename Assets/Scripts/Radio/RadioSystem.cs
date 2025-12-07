@@ -64,7 +64,7 @@ namespace RadioDispatch.Radio
             if (playAudioOnLog)
             {
                 PlayClickIn();
-                PlayClickOut();
+                PlayRogerBeep();
             }
         }
 
@@ -83,7 +83,7 @@ namespace RadioDispatch.Radio
         public void EndTransmission()
         {
             StopStatic();
-            PlayClickOut();
+            PlayRogerBeep();
         }
 
         /// <summary>
@@ -160,6 +160,21 @@ namespace RadioDispatch.Radio
 
             EnsureOneShotSource();
             oneShotSource.PlayOneShot(audioProfile.ClickOut, audioProfile.ClickVolume);
+        }
+
+        /// <summary>
+        /// Plays the configured roger/acknowledgement beep when available; falls back to the standard click-out.
+        /// </summary>
+        private void PlayRogerBeep()
+        {
+            if (audioProfile?.RogerBeep != null)
+            {
+                EnsureOneShotSource();
+                oneShotSource.PlayOneShot(audioProfile.RogerBeep, audioProfile.ClickVolume);
+                return;
+            }
+
+            PlayClickOut();
         }
 
         private void StartStatic()

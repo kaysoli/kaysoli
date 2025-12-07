@@ -328,8 +328,16 @@ namespace RadioDispatch.Core
             return new List<Records.RecordEntry>
             {
                 new Records.RecordEntry { Id = "A12345", Name = "Jamie Lee", Type = Records.RecordType.Civilian, VehiclePlate = "4HND213", Notes = "Valid license, no wants." },
+                new Records.RecordEntry { Id = "CIV-WRK-22", Name = "Alex Chen", Type = Records.RecordType.CivilianWorker, Occupation = "Target store lead", Notes = "Witnessed parking lot 487." },
+                new Records.RecordEntry { Id = "WH-001", Name = "Elena Park", Type = Records.RecordType.PresidentialStaff, Occupation = "Policy Advisor", Notes = "Cleared; protective detail notified on stops." },
+                new Records.RecordEntry { Id = "MIN-204", Name = "Minister Raul Ortega", Type = Records.RecordType.Minister, Occupation = "Finance", Notes = "Diplomatic courtesy." },
+                new Records.RecordEntry { Id = "MIL-7782", Name = "Capt. Maria Alvarez", Type = Records.RecordType.Military, Occupation = "Army intelligence", Notes = "Armed; coordinate with MP if detained." },
                 new Records.RecordEntry { Id = "B98211", Name = "Morgan Diaz", Type = Records.RecordType.Prisoner, Notes = "On parole, caution: resistive." },
-                new Records.RecordEntry { Id = "U-21", Name = "Officer Taylor", Type = Records.RecordType.Officer, VehiclePlate = "UNIT21", Notes = "Traffic division." },
+                new Records.RecordEntry { Id = "U-21", Name = "Officer Taylor", Type = Records.RecordType.Officer, VehiclePlate = "UNIT21", Occupation = "Traffic division", Notes = "Standard LE response." },
+                new Records.RecordEntry { Id = "FBI-44", Name = "SA Dana Park", Type = Records.RecordType.FbiAgent, Occupation = "Cyber squad", Notes = "Requests local backup on pursuits." },
+                new Records.RecordEntry { Id = "USSS-12", Name = "Agent Reed", Type = Records.RecordType.SecretService, Occupation = "Protective ops", Notes = "Coordinate via command post." },
+                new Records.RecordEntry { Id = "UC-508", Name = "Unlisted", Type = Records.RecordType.Undercover, Occupation = "Narcotics", Notes = "Do not broadcast assignments openly." },
+                new Records.RecordEntry { Id = "OPS-19", Name = "Lt. Avery Ford", Type = Records.RecordType.PoliceOfficer, Occupation = "Patrol supervisor", Notes = "May request Code-3 escort for dignitaries." },
                 new Records.RecordEntry { Id = "CAR-77", Name = "Unknown", Type = Records.RecordType.Vehicle, VehiclePlate = "7XKZ991", Notes = "Reported stolen." },
                 new Records.RecordEntry { Id = "SARAH-340555", Name = "Sarah Nguyen", Type = Records.RecordType.Civilian, Notes = "Grand theft victim, 2024 Honda Accord." },
                 new Records.RecordEntry { Id = "BOLO-CAMRY", Name = "Silver Toyota Camry", Type = Records.RecordType.Vehicle, VehiclePlate = "NO-PLATE", Notes = "BOLO issued, linked to 487 at 1690 Folsom." }

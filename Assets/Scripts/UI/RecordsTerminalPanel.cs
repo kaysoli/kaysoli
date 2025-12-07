@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using RadioDispatch.Radio;
@@ -17,7 +18,7 @@ namespace RadioDispatch.UI
         [SerializeField]
         private Text outputText;
 
-        [Tooltip("Optional dropdown to restrict searches to a record type (Any/Civilian/Officer/Prisoner/Vehicle). Leave empty for no filter.")]
+        [Tooltip("Optional dropdown to restrict searches to a record type (Any + each enum value in RecordType order). Leave empty for no filter.")]
         [SerializeField]
         private Dropdown typeDropdown;
 
@@ -62,15 +63,20 @@ namespace RadioDispatch.UI
                 return null;
             }
 
-            // Expect dropdown options to align with RecordType ordering plus an "Any" entry at index 0.
-            return typeDropdown.value switch
+            if (typeDropdown.value <= 0)
             {
-                1 => RecordType.Civilian,
-                2 => RecordType.Officer,
-                3 => RecordType.Prisoner,
-                4 => RecordType.Vehicle,
-                _ => null
-            };
+                return null;
+            }
+
+            var enumValues = (RecordType[])Enum.GetValues(typeof(RecordType));
+            var enumIndex = typeDropdown.value - 1;
+            if (enumIndex < 0 || enumIndex >= enumValues.Length)
+            {
+                Debug.LogWarning($"RecordsTerminalPanel dropdown index {typeDropdown.value} is out of range for RecordType options.");
+                return null;
+            }
+
+            return enumValues[enumIndex];
         }
     }
 }

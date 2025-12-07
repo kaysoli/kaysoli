@@ -12,6 +12,8 @@ namespace RadioDispatch.Radio
         [Header("Clicks & Static")]
         public AudioClip ClickIn;
         public AudioClip ClickOut;
+        [Tooltip("Optional roger beep that overrides the click-out sound for clearer confirmation, even during automated chatter.")]
+        public AudioClip RogerBeep;
         public AudioClip StaticLoop;
         public bool LoopStaticDuringTransmission = true;
 

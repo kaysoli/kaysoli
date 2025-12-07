@@ -18,6 +18,12 @@ namespace RadioDispatch.Records
         [Tooltip("Category so UI and voice responses can distinguish the record type.")]
         public RecordType Type = RecordType.Civilian;
 
+        [Tooltip("Optional custom category label (e.g., 'FBI Agent', 'Secret Service') when a built-in type is insufficient.")]
+        public string CustomCategoryLabel;
+
+        [Tooltip("Occupation or assignment to differentiate workers and undercover roles.")]
+        public string Occupation;
+
         [Tooltip("Optional vehicle plate or asset tag.")]
         public string VehiclePlate;
 
@@ -35,9 +41,10 @@ namespace RadioDispatch.Records
         public string BuildSummary()
         {
             var plate = string.IsNullOrWhiteSpace(VehiclePlate) ? string.Empty : $" Plate: {VehiclePlate}.";
-            var category = Type.ToString();
+            var category = string.IsNullOrWhiteSpace(CustomCategoryLabel) ? Type.ToString() : CustomCategoryLabel;
+            var job = string.IsNullOrWhiteSpace(Occupation) ? string.Empty : $" Role: {Occupation}.";
             var cleanNotes = string.IsNullOrWhiteSpace(Notes) ? string.Empty : $" Notes: {Notes}";
-            return $"{category} {Name} (ID: {Id}).{plate}{cleanNotes}".Trim();
+            return $"{category} {Name} (ID: {Id}).{plate}{job}{cleanNotes}".Trim();
         }
     }
 }

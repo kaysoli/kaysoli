@@ -16,7 +16,7 @@ namespace RadioDispatch.Records
         public List<RecordEntry> Records = new();
 
         /// <summary>
-        /// Merges CSV content into the database. Columns: Id,Name,Type,VehiclePlate,Notes,Metadata
+        /// Merges CSV content into the database. Columns: Id,Name,Type,VehiclePlate,Notes,Metadata,Occupation (optional)
         /// </summary>
         /// <param name="csvAsset">Text asset containing comma or semicolon separated rows.</param>
         /// <param name="separator">Column separator, defaults to comma.</param>
@@ -48,11 +48,14 @@ namespace RadioDispatch.Records
                 {
                     Id = parts[0].Trim(),
                     Name = parts[1].Trim(),
-                    Type = ParseType(parts.ElementAtOrDefault(2)),
-                    VehiclePlate = parts.ElementAtOrDefault(3)?.Trim(),
-                    Notes = parts.ElementAtOrDefault(4)?.Trim(),
-                    Metadata = parts.ElementAtOrDefault(5)?.Trim(),
                 };
+
+                entry.Type = ParseType(parts.ElementAtOrDefault(2), out var customCategory);
+                entry.CustomCategoryLabel = customCategory;
+                entry.VehiclePlate = parts.ElementAtOrDefault(3)?.Trim();
+                entry.Notes = parts.ElementAtOrDefault(4)?.Trim();
+                entry.Metadata = parts.ElementAtOrDefault(5)?.Trim();
+                entry.Occupation = parts.ElementAtOrDefault(6)?.Trim();
 
                 AddOrReplace(entry);
             }
@@ -93,20 +96,51 @@ namespace RadioDispatch.Records
                 Id = entry.Id,
                 Name = entry.Name,
                 Type = entry.Type,
+                CustomCategoryLabel = entry.CustomCategoryLabel,
                 VehiclePlate = entry.VehiclePlate,
+                Occupation = entry.Occupation,
                 Notes = entry.Notes,
                 Metadata = entry.Metadata
             };
         }
 
-        private static RecordType ParseType(string raw)
+        private static RecordType ParseType(string raw, out string customCategory)
         {
+            customCategory = null;
             if (string.IsNullOrWhiteSpace(raw))
             {
                 return RecordType.Civilian;
             }
 
-            return Enum.TryParse(raw, true, out RecordType parsed) ? parsed : RecordType.Civilian;
+            var normalized = raw.Trim().ToLowerInvariant();
+            return normalized switch
+            {
+                "civilian worker" or "worker" => RecordType.CivilianWorker,
+                "presidential" or "presidential staff" or "white house" => RecordType.PresidentialStaff,
+                "minister" or "cabinet" => RecordType.Minister,
+                "army" or "military" => RecordType.Military,
+                "police officer" or "patrol" => RecordType.PoliceOfficer,
+                "police" or "officer" or "leo" or "law enforcement" => RecordType.Officer,
+                "fbi" or "federal agent" or "agent" => RecordType.FbiAgent,
+                "secret service" or "usss" => RecordType.SecretService,
+                "undercover" or "uc" => RecordType.Undercover,
+                "prisoner" or "inmate" => RecordType.Prisoner,
+                "vehicle" or "car" or "plate" => RecordType.Vehicle,
+                _ => TryParseEnumOrCustom(raw, out customCategory)
+            };
+        }
+
+        private static RecordType TryParseEnumOrCustom(string raw, out string customCategory)
+        {
+            customCategory = null;
+            if (Enum.TryParse(raw, true, out RecordType parsed))
+            {
+                return parsed;
+            }
+
+            // Preserve the label for UI/radio while defaulting to civilian-type filtering.
+            customCategory = raw?.Trim();
+            return RecordType.Civilian;
         }
     }
 }
