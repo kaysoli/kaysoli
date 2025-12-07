@@ -5,7 +5,7 @@ using RadioDispatch.Units;
 using System.Reflection;
 using UnityEngine;
 
-namespace RadioDispatch.Tests
+namespace RadioDispatch.Tests.EditMode
 {
     public class ScoringSystemTests
     {

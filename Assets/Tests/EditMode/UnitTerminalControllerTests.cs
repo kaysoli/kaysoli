@@ -5,7 +5,7 @@ using RadioDispatch.Radio;
 using RadioDispatch.UI;
 using RadioDispatch.Units;
 
-namespace RadioDispatch.Tests
+namespace RadioDispatch.Tests.EditMode
 {
     public class UnitTerminalControllerTests
     {

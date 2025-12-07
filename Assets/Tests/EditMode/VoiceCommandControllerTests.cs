@@ -7,7 +7,7 @@ using RadioDispatch.Radio;
 using RadioDispatch.Units;
 using RadioDispatch.Voice;
 
-namespace RadioDispatch.Tests
+namespace RadioDispatch.Tests.EditMode
 {
     public class VoiceCommandControllerTests
     {

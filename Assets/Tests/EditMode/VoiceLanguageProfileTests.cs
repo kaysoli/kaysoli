@@ -4,7 +4,7 @@ using RadioDispatch.Calls;
 using RadioDispatch.Units;
 using RadioDispatch.Voice;
 
-namespace RadioDispatch.Tests
+namespace RadioDispatch.Tests.EditMode
 {
     public class VoiceLanguageProfileTests
     {

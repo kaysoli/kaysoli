@@ -6,7 +6,7 @@ using RadioDispatch.Radio;
 using RadioDispatch.Units;
 using RadioDispatch.Voice;
 
-namespace RadioDispatch.Tests
+namespace RadioDispatch.Tests.EditMode
 {
     /// <summary>
     /// Covers voice grammar additions such as callout creation, backup modes, and status updates.

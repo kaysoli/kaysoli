@@ -3,7 +3,7 @@ using RadioDispatch.Calls;
 using RadioDispatch.UI;
 using RadioDispatch.Units;
 
-namespace Tests.EditMode
+namespace RadioDispatch.Tests.EditMode
 {
     public class UIDisplayFormatterTests
     {

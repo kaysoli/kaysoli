@@ -4,7 +4,7 @@ using RadioDispatch.Core;
 using RadioDispatch.Radio;
 using UnityEngine;
 
-namespace RadioDispatch.Tests
+namespace RadioDispatch.Tests.EditMode
 {
     public class GameManagerShiftTests
     {
