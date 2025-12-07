@@ -78,3 +78,19 @@ You can spin up a quick test scene without the full terminal/UI stack by wiring 
    officer voice replies even without the full terminal UI.
 
 This setup lets you validate CSV data and radio/audio behavior quickly before layering on the complete HUD and terminal windows.
+
+## Sample scene recipe (hear chatter and dispatcher/unit answers quickly)
+Use `SampleScenarioBuilder` for a barebones scene that still exercises calls, unit replies, records lookups, and chatter:
+
+1. Create a new empty scene and add an empty GameObject named **SampleScenario**.
+2. Add these components to the object and wire references:
+   - `SampleScenarioBuilder` (Simulation) – assign `UnitManager`, `CallManager`, `RadioSystem`, `ChatterManager`, and `RecordsManager` from the scene.
+   - Content assets: a `UnitRoster`, `CallLibrary`, optional `ChatterLibrary`, optional `RecordsDatabase`, and any CSV/TSV sheets you want to merge.
+   - Audio: a `RadioAudioProfile` with your roger beep and any shared reply clips so transmissions sound live.
+3. Press Play. The builder will:
+   - Load the roster/templates/records into their managers.
+   - Begin the shift (if a `GameManager` is linked).
+   - Spawn the first call from your `CallLibrary`, dispatch the first available unit, and log the radio traffic.
+   - Play a chatter line after a short delay, wrapping it with the radio begin/end (roger) tones so you can hear unit → dispatch → unit flow.
+
+This sample scene runs without the terminal UI, letting you vet audio and voice interactions quickly. Toggle `autoRun` off on the builder if you want to trigger `BuildScenario` and `RunSampleSequence` manually from a button or debug console.
