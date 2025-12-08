@@ -27,6 +27,7 @@ Assets/
 - **UI Panels (Phase 2 scaffolding)**: `UIRadioPanel` updates top-bar info and transcript, `UITerminalPanel` and `UIUnitsPanel` populate call/unit lists, and `UISwipeController` animates the split-screen reveal.
 - **Voice Command Stack (Phase 3-ready)**: `VoiceInputManager` exposes listening start/stop and recognition events, while `VoiceCommandController` hooks recognized text into `CommandInterpreter`/`CommandExecutor` so spoken orders dispatch units or resolve calls.
 - **Immersion & Feedback (Phase 4)**: `CodeLibrary` aggregates any number of `CodeSet` assets for 10-codes and synonyms, `RadioAudioProfile`/`RadioFeedbackProfile` configure clicks/static/voice reply sounds and success/error highlights, and `TutorialManager` drives a guided training sequence with customizable steps.
+- **Response Audio Libraries**: `ResponseAudioLibrary` assets map reply keywords (Acknowledgement, Status, Backup, Panic, etc.) to WAV clip variations so officers can answer with different lines even when a specific `UnitVoiceProfile` clip is missing.
 - **Content & Progression (Phase 5)**: `ShiftConfig` scales call spawn intensity over a shift, `CallLibrary` and `UnitRoster` let you load larger banks of incidents and units, `GameManager` now coordinates shift timing and failure conditions, and `ProfileManager` persists best scores, ranks, and settings.
 - **Localization, Grammar, and Terminal Controls**: `VoiceLanguageProfile` now drives multilingual grammar packs (backup code levels, status tokens, panic words) and officer replies, while `UnitTerminalController` exposes terminal-driven status updates, call assignments, and acknowledgement labels (e.g., "10-4") without overriding the voice-first flow.
 - **Voice-Spawned Callouts & Backup Types**: Add voice-trigger tokens to any `CallTemplate` so dispatchers can verbally start or end callouts, push code 2/3/pursuit/air/SWAT/EMS/firetruck backup, and update unit statuses (available, on scene, in custody, panic) with radio feedback.
@@ -40,14 +41,15 @@ Assets/
 - **Active roster control**: Use `UnitManager.SetUnits(...)` for bulk seeding (rosters, procedural pools, CSV-driven units) and `UnitManager.AddUnit(...)` to activate additional units at runtime. The voice pipeline always treats the player as dispatcher; units respond with their assigned voice profile and call sign.
 
 ### Records CSV/TSV format
-- Place CSV/TSV sheets under `Assets/` and assign them to `RecordsManager.csvSheets`. The importer auto-detects tabs/semicolons/commas and supports either the simple legacy row (`Id,Name,Type,VehiclePlate,Notes,Metadata,Occupation`) or the full header provided by the user (`RECORD_ID\tTIMESTAMP\tDATA_VERSION...\tIS_WITNESS_PROTECTION\tTYPE`).
+- Place CSV/TSV sheets under `Assets/` and assign them to `RecordsManager.csvSheets` or attach them directly to the `csvFiles` list on a `RecordsDatabase` asset. When CSVs are present on the database asset it rebuilds itself on enable, so you can drag thousands of civilians/officers in without hand entry.
+- The importer auto-detects tabs/semicolons/commas and supports either the simple legacy row (`Id,Name,Type,VehiclePlate,Notes,Metadata,Occupation`) or the full header provided by the user (`RECORD_ID\tTIMESTAMP\tDATA_VERSION...\tIS_WITNESS_PROTECTION\tTYPE`).
 - Header columns are matched case-insensitively so order does not matter; unknown headers are ignored safely. Split-name columns are recombined into the display `Name`, and the `TYPE`/`RECORD_TYPE` column feeds the record category (with custom labels preserved).
 - Example row (tab separated):
   ```
   RECORD_ID\tTIMESTAMP\t...\tIS_WITNESS_PROTECTION\tTYPE
   REC-1\t2025-12-07T19:12:55Z\t...\tNo\tCivilian Worker
   ```
-- **Chatter & Lookup Replies**: `ChatterLibrary`/`ChatterManager` can auto-play ambient unit requests (plate, subject, victim follow-ups) with dispatcher responses routed through the records system, unit voice buckets, and roger beeps to keep the airwaves alive even during automated chatter.
+- **Chatter & Lookup Replies**: `ChatterLibrary`/`ChatterManager` can auto-play ambient unit requests (plate, subject, victim follow-ups) with dispatcher responses routed through the records system, unit voice buckets, response audio libraries, and roger beeps to keep the airwaves alive even during automated chatter.
 - **Simulation Helpers & PTT Hotkeys**: `UnitGenesisPool` can bulk-generate 100+ units from rosters, CSV sheets, or procedural LAPD-style call signs, while `VoiceHotkeyRouter` + `QueuedSpeechProviderAsset` let you test push-to-talk and speech routing in the Editor using a keyboard and queued phrases. `DispatchSimulationController` glues generation, voice routing, and shift start-up together for quick end-to-end simulations.
 
 ## Running Edit Mode Tests

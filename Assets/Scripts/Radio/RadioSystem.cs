@@ -15,6 +15,10 @@ namespace RadioDispatch.Radio
         [SerializeField]
         private RadioAudioProfile audioProfile;
 
+        [Tooltip("Optional keyword-based clip library so dispatch can play varied responses without unit-specific profiles.")]
+        [SerializeField]
+        private ResponseAudioLibrary responseLibrary;
+
         [SerializeField]
         private bool playAudioOnLog = true;
 
@@ -129,7 +133,10 @@ namespace RadioDispatch.Radio
 
             LastPlayedVoiceClip = null;
             // If the profile has no clip for this response we drop back to the shared bank.
-            PlayUnitResponse();
+            if (!PlayNamedResponse(responseType.ToString()))
+            {
+                PlayUnitResponse();
+            }
         }
 
         /// <summary>
@@ -145,6 +152,27 @@ namespace RadioDispatch.Radio
             LastPlayedVoiceClip = clip;
             EnsureOneShotSource();
             oneShotSource.PlayOneShot(clip, volume);
+        }
+
+        /// <summary>
+        /// Attempts to play a clip from the response library using a keyword key. Returns true when a clip was played.
+        /// </summary>
+        /// <param name="key">Keyword matching a ResponseAudioEntry (e.g., "Acknowledgement", "Status").</param>
+        public bool PlayNamedResponse(string key)
+        {
+            if (responseLibrary == null)
+            {
+                return false;
+            }
+
+            var clip = responseLibrary.GetClip(key);
+            if (clip == null)
+            {
+                return false;
+            }
+
+            PlayCustomClip(clip, audioProfile != null ? audioProfile.VoiceVolume : 1f);
+            return true;
         }
 
         private void PlayClickIn()

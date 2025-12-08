@@ -12,8 +12,14 @@ namespace RadioDispatch.Records
     [CreateAssetMenu(fileName = "RecordsDatabase", menuName = "RadioDispatch/Records Database")]
     public class RecordsDatabase : ScriptableObject
     {
+        [Header("Data")]
         [Tooltip("Initial records authored directly in the asset.")]
         public List<RecordEntry> Records = new();
+
+        [Tooltip("Optional CSV/TSV TextAssets. When populated, the asset will rebuild Records from these files on enable so yo" 
+                 + "u can drag large civilian/officer spreadsheets without hand-entering rows.")]
+        [SerializeField]
+        private List<TextAsset> csvFiles = new();
 
         /// <summary>
         /// Merges CSV or TSV content into the database. It accepts either a simple row format (Id,Name,Type,VehiclePlate,Notes,
@@ -74,6 +80,29 @@ namespace RadioDispatch.Records
                     ParseSimpleRow(parts);
                 }
             }
+        }
+
+        /// <summary>
+        /// Clears and rebuilds the Records list from the attached CSV/TSV files when any are assigned.
+        /// </summary>
+        public void RebuildFromAttachedCsvs()
+        {
+            if (csvFiles == null || csvFiles.Count == 0)
+            {
+                return; // Nothing to rebuild; keep any hand-authored rows intact.
+            }
+
+            Records.Clear();
+            foreach (var sheet in csvFiles)
+            {
+                ImportCsv(sheet);
+            }
+        }
+
+        private void OnEnable()
+        {
+            // Make sure the asset is ready to clone at runtime without manual data entry when CSVs are attached.
+            RebuildFromAttachedCsvs();
         }
 
         /// <summary>

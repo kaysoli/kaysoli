@@ -62,6 +62,8 @@ namespace RadioDispatch.Records
 
             if (defaultDatabase != null)
             {
+                // Ensure any attached CSV/TSV files populate the asset before cloning rows.
+                defaultDatabase.RebuildFromAttachedCsvs();
                 foreach (var entry in defaultDatabase.CloneAll())
                 {
                     AppendRecord(entry);
