@@ -83,6 +83,35 @@ You can spin up a quick test scene without the full terminal/UI stack by wiring 
 
 This setup lets you validate CSV data and radio/audio behavior quickly before layering on the complete HUD and terminal windows.
 
+## Trial scene with UI PTT and audio replies (quick hands-on)
+Follow these steps to hear a dispatcher→unit exchange with your own button and WAV clips:
+
+1. **Create a new scene and GameObjects**
+   - Add an empty **Dispatcher** object and attach `GameManager`, `CallManager`, `UnitManager`, `RadioSystem`, `RecordsManager`, `VoiceCommandController`, and `VoiceInputManager`.
+   - Add a **PTTButton** UI Button (or Image + `EventTrigger`). Set its **OnPointerDown** to `UIManager.OnPttPressed` and **OnPointerUp/PointerExit** to `UIManager.OnPttReleased` (or wire directly to `VoiceInputManager.BeginListening/EndListening` if you prefer a minimal stack).
+   - Add `UIRadioPanel` if you want to see the transcript/listening indicator; otherwise the radio beeps still fire without the panel.
+
+2. **Attach content & audio**
+   - Drag a `UnitRoster` (or `UnitDefinition` assets) into `UnitManager` and a `CallLibrary` into `CallManager`. If you rely on CSV records, assign your sheets to `RecordsManager.csvSheets` or to a `RecordsDatabase`’s `csvFiles` list.
+   - Assign a `RadioAudioProfile` on `RadioSystem` that contains `transmissionStart`, `transmissionEnd` (roger beep), and optional `staticLoop` clips. The audio folder structure can follow:
+     ```
+     Assets/Audio/OfficerVoices/
+       Adam-7/dispatch_01.wav, status_01.wav...
+       Bravo-12/dispatch_01.wav...
+       Static/radio_static.wav, transmission_start.wav, transmission_end.wav
+     ```
+   - For officer-specific replies, assign a `UnitVoiceProfile` to each unit and fill its reply buckets. For generic fallbacks, create a `ResponseAudioLibrary` asset and add keyword → clip variations (e.g., Acknowledgement → ["10-4.wav", "Copy.wav"]).
+
+3. **Hook the radio + voice pipeline**
+   - Link `VoiceCommandController` to the managers, `RadioSystem`, and `RecordsManager`; set the active `VoiceLanguageProfile` in the controller so dispatcher keywords like “Unit 7 respond…”, “status check”, “run plate” are parsed correctly.
+   - Ensure `UIManager` references the radio, call/unit panels (optional), and voice input/command controllers. The PTT button now drives listening → interpretation → execution → officer audio + roger beep.
+
+4. **Press Play and test**
+   - Hold the PTT button, speak a command (e.g., “Unit Adam-7 respond to 123 Main for a 211”), then release. The system will log the speech, dispatch the unit, play its voice reply from `UnitVoiceProfile`/`ResponseAudioLibrary`, and finish with the roger beep.
+   - Ask, “Unit Adam-7, what’s your status?” to hear one of the status reply variants. Run a lookup (“Run plate 7XKZ991”) to hear the dispatcher’s record response and the unit acknowledgement.
+
+If you want desktop testing without UI, add `VoiceHotkeyRouter` to the scene and use the default hotkey (Right Alt) to simulate PTT; it sends queued phrases or speech-provider output into the same pipeline.
+
 ## Sample scene recipe (hear chatter and dispatcher/unit answers quickly)
 Use `SampleScenarioBuilder` for a barebones scene that still exercises calls, unit replies, records lookups, and chatter:
 
@@ -98,3 +127,18 @@ Use `SampleScenarioBuilder` for a barebones scene that still exercises calls, un
    - Play a chatter line after a short delay, wrapping it with the radio begin/end (roger) tones so you can hear unit → dispatch → unit flow.
 
 This sample scene runs without the terminal UI, letting you vet audio and voice interactions quickly. Toggle `autoRun` off on the builder if you want to trigger `BuildScenario` and `RunSampleSequence` manually from a button or debug console.
+
+## Script dependency map (who depends on whom)
+- **GameManager** → orchestrates **CallManager**, **UnitManager**, **ScoringSystem**, **RadioSystem**, **RecordsManager** and starts/stops shifts.
+- **CallManager** → owns `CallData` and uses **RadioSystem** (logs), **ScoringSystem** (events), optional **UnitManager** (assignment checks).
+- **UnitManager** → owns `Unit`/`UnitDefinition`/`UnitRoster`, uses **RadioSystem** to announce changes, optional **RecordsManager** for lookup contexts.
+- **RecordsManager** → loads `RecordsDatabase` + CSV/TSV sheets, serves lookup results to **VoiceCommandController**, **ChatterManager**, **RecordsTerminalPanel**.
+- **VoiceInputManager** → raises recognition events; driven by **UIManager** PTT or **VoiceHotkeyRouter**.
+- **VoiceCommandController** → listens to **VoiceInputManager**, parses via **CommandInterpreter** (needs `VoiceLanguageProfile`, `CodeLibrary`), executes via **CommandExecutor** (needs **UnitManager**, **CallManager**, **RadioSystem**, **RecordsManager**).
+- **RadioSystem** → plays click/static/roger and officer responses from `UnitVoiceProfile` or `ResponseAudioLibrary`; subscribed to by UI panels for transcript updates.
+- **UIManager** → references **UIRadioPanel**, **UITerminalPanel**, **UIUnitsPanel**, **UnitTerminalController**, and hooks into **VoiceInputManager** / **VoiceCommandController** / **RadioSystem** for PTT and refreshes.
+- **ChatterManager** → uses **RadioSystem**, **RecordsManager**, **UnitManager** to play ambient chatter and dispatcher replies.
+- **TutorialManager** → subscribes to **VoiceCommandController** and **CallManager** to gate tutorial steps.
+- **SampleScenarioBuilder / DispatchSimulationController** → glue managers, rosters, call libraries, chatter, and radio/voice assets for quick test scenes.
+
+Keep this map handy when wiring new scenes: every dependency above must be assigned in the Inspector to avoid null-reference errors at play time.
