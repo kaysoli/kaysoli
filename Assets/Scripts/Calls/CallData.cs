@@ -4,7 +4,40 @@ using UnityEngine;
 namespace RadioDispatch.Calls
 {
     public enum CallPriority { Low, Medium, High, Critical }
-    public enum CallCategory { General, Robbery, Traffic, Disturbance, Medical, Pursuit }
+    public enum CallCategory
+    {
+        General,
+        Robbery,
+        Traffic,
+        Disturbance,
+        Medical,
+        Pursuit,
+        OfficerDown,
+        ShotsFired,
+        Assault,
+        Burglary,
+        Theft,
+        Vandalism,
+        Domestic,
+        MentalHealth,
+        WelfareCheck,
+        Suspicious,
+        TrafficStop,
+        Stabbing,
+        Shooting,
+        Kidnapping,
+        Fire,
+        Hazard,
+        Alarm,
+        BackupRequest,
+        Panic,
+        MissingPerson,
+        Drugs,
+        VehicleTheft,
+        Rescue,
+        AirSupport,
+        Administrative
+    }
 
     /// <summary>
     /// Runtime representation of a call/incident currently active in the city.

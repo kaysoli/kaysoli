@@ -170,8 +170,10 @@ namespace RadioDispatch.Units
                 CurrentZone = source.CurrentZone,
                 CurrentCall = source.CurrentCall,
                 Type = source.Type,
+                Department = source.Department,
                 AcknowledgementLabel = source.AcknowledgementLabel,
-                VoiceProfile = source.VoiceProfile
+                VoiceProfile = source.VoiceProfile,
+                Crew = source.Crew != null ? new List<OfficerProfile>(source.Crew) : new List<OfficerProfile>()
             };
         }
 
