@@ -23,7 +23,7 @@ namespace RadioDispatch.Voice
         private List<string> backupKeywords = new() { "backup", "additional" };
 
         [SerializeField]
-        private List<string> statusKeywords = new() { "status" };
+        private List<string> statusKeywords = new() { "status", "10-20", "position", "location", "on scene" };
 
         [SerializeField]
         private List<string> cancelKeywords = new() { "cancel" };
@@ -45,6 +45,9 @@ namespace RadioDispatch.Voice
 
         [SerializeField]
         private List<string> personLookupKeywords = new() { "id", "subject", "person", "name" };
+
+        [SerializeField]
+        private List<string> availabilityKeywords = new() { "available units", "anyone free", "who is available" };
 
         [Header("Grammar Mapping")]
         [SerializeField]
@@ -100,6 +103,10 @@ namespace RadioDispatch.Voice
         [SerializeField]
         private string lookupTemplate = "Results for {query}: {result}";
 
+        [Tooltip("Template for availability roll-call (uses {units}).")]
+        [SerializeField]
+        private string availabilityTemplate = "Available units: {units}";
+
         [Header("Officer Replies")]
         [SerializeField]
         private List<string> officerReplies = new() { "Copy, en route", "10-4", "Acknowledged" };
@@ -134,6 +141,14 @@ namespace RadioDispatch.Voice
             backupKeywords = backup == null ? new List<string>() : backup.Select(k => k.ToLowerInvariant()).ToList();
             statusKeywords = status == null ? new List<string>() : status.Select(k => k.ToLowerInvariant()).ToList();
             cancelKeywords = cancel == null ? new List<string>() : cancel.Select(k => k.ToLowerInvariant()).ToList();
+        }
+
+        /// <summary>
+        /// Allows modders to extend or override phrases that should trigger availability queries.
+        /// </summary>
+        public void SetAvailabilityKeywords(IEnumerable<string> keywords)
+        {
+            availabilityKeywords = keywords == null ? new List<string>() : keywords.Select(k => k.ToLowerInvariant()).ToList();
         }
 
         /// <summary>
@@ -271,6 +286,16 @@ namespace RadioDispatch.Voice
         }
 
         /// <summary>
+        /// Builds a localized response listing available units.
+        /// </summary>
+        public string FormatAvailability(IEnumerable<Units.Unit> available)
+        {
+            var labels = available?.Select(u => string.IsNullOrWhiteSpace(u.DisplayName) ? u.Id : u.DisplayName).ToList() ?? new List<string>();
+            var roster = labels.Count == 0 ? "None" : string.Join(", ", labels);
+            return string.IsNullOrWhiteSpace(availabilityTemplate) ? $"Available units: {roster}" : availabilityTemplate.Replace("{units}", roster);
+        }
+
+        /// <summary>
         /// Retrieves a random officer reply in the configured language for immersion.
         /// </summary>
         public string GetOfficerReply()
@@ -289,6 +314,14 @@ namespace RadioDispatch.Voice
         public bool ContainsPanic(string cleanedText)
         {
             return ContainsAny(cleanedText, panicKeywords);
+        }
+
+        /// <summary>
+        /// Checks for "any available units" style queries.
+        /// </summary>
+        public bool ContainsAvailability(string cleanedText)
+        {
+            return ContainsAny(cleanedText, availabilityKeywords);
         }
 
         /// <summary>

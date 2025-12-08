@@ -68,5 +68,13 @@ namespace RadioDispatch.Tests.EditMode
             Assert.That(command.RecognizedCodes, Has.Count.EqualTo(1));
             Assert.That(command.RecognizedKeywords, Does.Contain("10-33"));
         }
+
+        [Test]
+        public void Parse_AvailabilityKeywords_ReturnsAvailabilityIntent()
+        {
+            var command = interpreter.Parse("Are there any available units?");
+
+            Assert.AreEqual(CommandType.QueryAvailableUnits, command.Type);
+        }
     }
 }

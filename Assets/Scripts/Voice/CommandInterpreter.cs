@@ -19,7 +19,8 @@ namespace RadioDispatch.Voice
         EndCallout,
         UpdateUnitStatus,
         PanicCheck,
-        LookupRecord
+        LookupRecord,
+        QueryAvailableUnits
     }
 
     public enum BackupRequestType
@@ -105,6 +106,16 @@ namespace RadioDispatch.Voice
             if (!string.IsNullOrWhiteSpace(command.LookupQuery))
             {
                 return CommandType.LookupRecord;
+            }
+
+            if (languageProfile != null && languageProfile.ContainsAvailability(cleaned))
+            {
+                return CommandType.QueryAvailableUnits;
+            }
+
+            if (cleaned.Contains("available units") || cleaned.Contains("anyone free"))
+            {
+                return CommandType.QueryAvailableUnits;
             }
 
             if (ContainsMeaning(codes, "backup") || cleaned.Contains("backup") || cleaned.Contains("additional"))

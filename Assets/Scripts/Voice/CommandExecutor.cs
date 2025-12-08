@@ -73,6 +73,9 @@ namespace RadioDispatch.Voice
                 case CommandType.LookupRecord:
                     HandleLookup(command);
                     break;
+                case CommandType.QueryAvailableUnits:
+                    HandleAvailability();
+                    break;
                 default:
                     radioSystem.LogMessage("Dispatch", $"Unrecognized command: {command.RawText}");
                     break;
@@ -269,6 +272,21 @@ namespace RadioDispatch.Voice
             }
         }
 
+        /// <summary>
+        /// Provides a quick roster roll-up for phrases like "any available units?".
+        /// </summary>
+        private void HandleAvailability()
+        {
+            var available = unitManager != null ? unitManager.GetUnitsByStatus(UnitStatus.Available) : new List<Unit>();
+            var response = languageProfile?.FormatAvailability(available) ?? FormatAvailabilityFallback(available);
+            radioSystem.LogMessage("Dispatch", response);
+
+            if (available.Count > 0)
+            {
+                LogOfficerReply(available[0], VoiceResponseType.Status, "Standing by.");
+            }
+        }
+
         private string FormatAssignment(Unit unit, CallData call)
         {
             var unitLabel = GetUnitLabel(unit);
@@ -289,6 +307,12 @@ namespace RadioDispatch.Voice
             var unitLabel = GetUnitLabel(unit);
             var fallback = $"Status is {unit.Status}.";
             return languageProfile?.FormatStatus(fallback, unitLabel, unit.Status.ToString()) ?? fallback;
+        }
+
+        private static string FormatAvailabilityFallback(IEnumerable<Unit> units)
+        {
+            var labels = units.Select(GetUnitLabel).ToList();
+            return labels.Count == 0 ? "No units available." : $"Available units: {string.Join(", ", labels)}.";
         }
 
         private string FormatCancellation(CallData call)

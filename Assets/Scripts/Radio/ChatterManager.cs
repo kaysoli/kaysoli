@@ -22,6 +22,19 @@ namespace RadioDispatch.Radio
         [SerializeField]
         private Vector2 autoPlayDelaySeconds = new(45f, 90f);
 
+        [Header("Ambient Looping")]
+        [Tooltip("When enabled, randomly loops through the ambient clips to simulate real-world radio chatter.")]
+        [SerializeField]
+        private bool loopAmbientClips;
+
+        [Tooltip("Clips to loop quietly in the background (short officer transmissions, static bursts, etc.).")]
+        [SerializeField]
+        private List<AudioClip> ambientClips = new();
+
+        [Tooltip("Random delay range between ambient clips.")]
+        [SerializeField]
+        private Vector2 ambientDelaySeconds = new(25f, 55f);
+
         [Header("Dependencies")]
         [SerializeField]
         private UnitManager unitManager;
@@ -34,6 +47,7 @@ namespace RadioDispatch.Radio
 
         private List<ChatterEntry> runtimeEntries = new();
         private Coroutine autoRoutine;
+        private Coroutine ambientRoutine;
 
         private void Awake()
         {
@@ -65,6 +79,11 @@ namespace RadioDispatch.Radio
             {
                 autoRoutine = StartCoroutine(AutoChatterLoop());
             }
+
+            if (loopAmbientClips && ambientClips.Count > 0)
+            {
+                ambientRoutine = StartCoroutine(AmbientLoop());
+            }
         }
 
         private void OnDisable()
@@ -72,6 +91,11 @@ namespace RadioDispatch.Radio
             if (autoRoutine != null)
             {
                 StopCoroutine(autoRoutine);
+            }
+
+            if (ambientRoutine != null)
+            {
+                StopCoroutine(ambientRoutine);
             }
         }
 
@@ -156,6 +180,26 @@ namespace RadioDispatch.Radio
                 var delay = Random.Range(autoPlayDelaySeconds.x, autoPlayDelaySeconds.y);
                 yield return new WaitForSeconds(delay);
                 PlayRandomChatter();
+            }
+        }
+
+        /// <summary>
+        /// Plays short ambient clips on a loop with random spacing to keep the radio feeling alive.
+        /// </summary>
+        private IEnumerator AmbientLoop()
+        {
+            while (loopAmbientClips && enabled)
+            {
+                var delay = Random.Range(ambientDelaySeconds.x, ambientDelaySeconds.y);
+                yield return new WaitForSeconds(delay);
+
+                var clip = ambientClips[Random.Range(0, ambientClips.Count)];
+                if (clip != null && radioSystem != null)
+                {
+                    radioSystem.BeginTransmission();
+                    radioSystem.PlayCustomClip(clip);
+                    radioSystem.EndTransmission();
+                }
             }
         }
     }
