@@ -7,6 +7,8 @@ using RadioDispatch.Records;
 
 namespace RadioDispatch.UI
 {
+    // Connections: subscribes to CallManager/UnitManager/RadioSystem events, forwards PTT to VoiceInputManager,
+    // and orchestrates UI panels (radio/terminal/units/records) so visual state follows dispatcher actions.
     /// <summary>
     /// Coordinates simple UI callbacks for the prototype. Real UI will be added later.
     /// </summary>

@@ -4,6 +4,8 @@ using UnityEngine.Events;
 
 namespace RadioDispatch.Voice
 {
+    // Connections: invoked by UI/VoiceHotkeyRouter for PTT state; publishes events consumed by VoiceCommandController
+    // and UI panels to reflect listening and recognized speech.
     /// <summary>
     /// Wraps platform speech recognition. Uses events so platforms can plug in their own providers.
     /// </summary>

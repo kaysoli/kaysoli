@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace RadioDispatch.Radio
 {
+    // Connections: receives log/vo events from managers and CommandExecutor; notifies UI transcript listeners
+    // and plays audio via configured profiles/response libraries.
     /// <summary>
     /// Simple radio logger. In a full build this manages audio beeps and VO playback.
     /// </summary>

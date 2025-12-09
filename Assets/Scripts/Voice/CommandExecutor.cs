@@ -8,6 +8,8 @@ using RadioDispatch.Records;
 
 namespace RadioDispatch.Voice
 {
+    // Connections: driven by VoiceCommandController; delegates work to UnitManager/CallManager/RecordsManager
+    // and emits radio/audio through RadioSystem so downstream UI/radio listeners stay in sync.
     /// <summary>
     /// Executes parsed commands by delegating to the proper managers and logging radio feedback.
     /// </summary>

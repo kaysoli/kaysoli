@@ -6,6 +6,8 @@ using RadioDispatch.Units;
 
 namespace RadioDispatch.Radio
 {
+    // Connections: pulls units from UnitManager, may query RecordsManager for lookup chatter, and outputs through RadioSystem;
+    // designed to be triggered by UI buttons, simulation scripts, or automatic timers.
     /// <summary>
     /// Generates ambient unit chatter (subject/plate requests, banter) and routes it through the radio and records systems.
     /// </summary>

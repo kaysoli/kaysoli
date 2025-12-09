@@ -8,6 +8,8 @@ using RadioDispatch.Units;
 
 namespace RadioDispatch.Voice
 {
+    // Connections: subscribes to VoiceInputManager recognition events, parses via CommandInterpreter,
+    // executes through CommandExecutor, and reports feedback to RadioSystem/UI listeners.
     /// <summary>
     /// Bridges voice recognition results to intent parsing and command execution.
     /// Attach alongside a VoiceInputManager and reference core managers.

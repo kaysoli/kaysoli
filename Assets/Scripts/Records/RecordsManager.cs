@@ -7,6 +7,8 @@ using RadioDispatch.Units;
 
 namespace RadioDispatch.Records
 {
+    // Connections: queried by CommandExecutor, RecordsTerminalPanel, and ChatterManager; pushes radio replies via RadioSystem
+    // and surfaces lookup events to UI listeners.
     /// <summary>
     /// Handles record lookups (subjects, vehicles, officers) and surfaces results to the radio and UI terminals.
     /// </summary>
