@@ -1,9 +1,7 @@
 {
   "name": "RadioDispatch.Tests",
   "references": [
-    "RadioDispatch.Runtime",
-    "UnityEngine.TestRunner",
-    "UnityEditor.TestRunner"
+    "RadioDispatch.Runtime"
   ],
   "optionalUnityReferences": ["TestAssemblies"],
   "includePlatforms": [],
